@@ -33,7 +33,7 @@
 
             let cuadrado = false;
 
-            canvas.addEventListener('mousemove', e => {
+            canvas.addEventListener('click', e => {
                 const {offsetX: x, offsetY: y} = e;
                 ctx.beginPath()
                 if(!cuadrado) ctx.arc(x, y, 30, 0, Math.PI*2);

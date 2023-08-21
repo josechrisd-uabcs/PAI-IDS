@@ -45,6 +45,14 @@
             
             ctx.lineWidth = 1;
             ctx.strokeText("Hallo world", 10, 90);
+            
+            const linear_gradient = ctx.createLinearGradient(0, 250, 150, 250);
+            linear_gradient.addColorStop(0, "#888");
+            linear_gradient.addColorStop(0.5, "#fff");
+            linear_gradient.addColorStop(1, "#888");
+
+            ctx.fillStyle = linear_gradient;
+            ctx.fillRect(0, 250, 150, 150);
         })
     </script>
 </body>

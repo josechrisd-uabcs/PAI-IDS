@@ -14,6 +14,14 @@
     <image src="./sprites.png" id="image" style="display: none;"></image>
     <canvas width="720" height="700" id="canvas"></canvas>
     <script>
+
+        const randomRGB = () => {
+            const r = Math.floor(Math.random() * 256);
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
         window.addEventListener('load', () => {
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
@@ -30,6 +38,9 @@
                 ctx.fill()
             })
 
+            canvas.addEventListener('mouseenter', e => {
+                ctx.fillStyle = randomRGB()
+            })
         })
     </script>
 </body>

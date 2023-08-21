@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Canvas</title>
+    <style>
+        canvas{
+            background-color: #eeeeff;
+        }
+    </style>
 </head>
 <body>
     <image src="./sprites.png" id="image" style="display: none;"></image>
@@ -14,64 +19,17 @@
             const ctx = canvas.getContext('2d');
             if(!ctx) return;
             
-            ctx.fillStyle = "#7d88e5";
-            ctx.fillRect(100, 100, 100, 100);
-            
-            ctx.fillStyle = "#cd0009";
-            ctx.fillRect(180, 180, 100, 100);
-            
-            ctx.fillStyle = "rgba(255,0,255,0.5)";
-            ctx.fillRect(260, 260, 100, 100);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#aaaaff';
 
-            ctx.fillStyle = "#ff8888";
-            ctx.strokeStyle = "#ff8888";
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.moveTo(300, 200)
-            ctx.lineTo(350, 200);
-            ctx.lineTo(325, 150);
-            ctx.fill();
-
-            ctx.beginPath();
-            ctx.arc(400, 110, 50, 0, 2 * Math.PI);
-            ctx.fill();
-            
-            ctx.beginPath();
-            ctx.arc(510, 110, 50, 0, 2 * Math.PI);
-            ctx.stroke();
-
-            ctx.font = "32px Arial";
-            ctx.fillText("Hallo world", 10, 50);
-            
-            ctx.lineWidth = 1;
-            ctx.strokeText("Hallo world", 10, 90);
-            
-            const linear_gradient = ctx.createLinearGradient(0, 250, 150, 250);
-            linear_gradient.addColorStop(0, "#888");
-            linear_gradient.addColorStop(0.5, "#fff");
-            linear_gradient.addColorStop(1, "#888");
-
-            ctx.fillStyle = linear_gradient;
-            ctx.fillRect(0, 250, 150, 150);
-            
-            const radial_gradient = ctx.createRadialGradient(0 + 75, 410 + 75, 0, 0 + 75, 410 + 75, 100);
-            radial_gradient.addColorStop(0, "#000");
-            radial_gradient.addColorStop(.5, "#226");
-            radial_gradient.addColorStop(1, "#ddd");
-
-            ctx.fillStyle = radial_gradient;
-            ctx.fillRect(0, 410, 150, 150);
-
-            const image = document.getElementById('image')
-            drawImage = () => {
-                ctx.drawImage(image, 1338, 2, 88, 94, 200, 0, 88, 94);
-            }
-            if(image.complete){
-                drawImage();
-            }
-            image.addEventListener('load', () => {
-                drawImage();
+            canvas.addEventListener('click', e => {
+                const {offsetX: x, offsetY: y} = e;
+                ctx.beginPath()
+                ctx.arc(x, y, 30, 0, Math.PI*2);
+                ctx.stroke()
+                ctx.fill()
             })
+
         })
     </script>
 </body>

@@ -29,17 +29,25 @@
             
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#aaaaff';
+            ctx.strokeStyle = '#000';
+
+            let cuadrado = false;
 
             canvas.addEventListener('click', e => {
                 const {offsetX: x, offsetY: y} = e;
                 ctx.beginPath()
-                ctx.arc(x, y, 30, 0, Math.PI*2);
+                if(cuadrado) ctx.arc(x, y, 30, 0, Math.PI*2);
+                else ctx.rect(x - 30, y - 30, 60, 60)
                 ctx.stroke()
                 ctx.fill()
             })
 
             canvas.addEventListener('mouseenter', e => {
                 ctx.fillStyle = randomRGB()
+            })
+
+            canvas.addEventListener('mouseout', e => {
+                cuadrado = !cuadrado
             })
         })
     </script>

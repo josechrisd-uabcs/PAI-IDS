@@ -28,4 +28,10 @@ window.addEventListener('load', () => {
     ctx.beginPath();
     ctx.arc(510, 110, 50, 0, 2 * Math.PI);
     ctx.stroke();
+
+    ctx.font = "32px Arial";
+    ctx.fillText("Hallo world", 10, 50);
+    
+    ctx.lineWidth = 1;
+    ctx.strokeText("Hallo world", 10, 90);
 })

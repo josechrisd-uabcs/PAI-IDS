@@ -7,7 +7,7 @@
     <script src="./index.js"></script>
 </head>
 <body>
-    <canvas width="720" height="512" id="canvas"></canvas>
+    <canvas width="720" height="700" id="canvas"></canvas>
     <script>
         window.addEventListener('load', () => {
             const canvas = document.getElementById('canvas');
@@ -53,6 +53,14 @@
 
             ctx.fillStyle = linear_gradient;
             ctx.fillRect(0, 250, 150, 150);
+            
+            const radial_gradient = ctx.createRadialGradient(0 + 75, 410 + 75, 0, 0 + 75, 410 + 75, 100);
+            radial_gradient.addColorStop(0, "#000");
+            radial_gradient.addColorStop(.5, "#226");
+            radial_gradient.addColorStop(1, "#ddd");
+
+            ctx.fillStyle = radial_gradient;
+            ctx.fillRect(0, 410, 150, 150);
         })
     </script>
 </body>

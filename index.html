@@ -19,7 +19,7 @@
             const r = Math.floor(Math.random() * 256);
             const g = Math.floor(Math.random() * 256);
             const b = Math.floor(Math.random() * 256);
-            return `rgb(${r}, ${g}, ${b})`;
+            return `rgb(${r}, ${g}, ${b}, ${Math.random()})`;
         }
 
         window.addEventListener('load', () => {
@@ -44,6 +44,16 @@
 
             canvas.addEventListener('mouseenter', e => {
                 ctx.fillStyle = randomRGB()
+            })
+
+            canvas.addEventListener('mousemove', e => {
+                const {offsetX: x, offsetY: y} = e;
+                const fill = ctx.fillStyle;
+                ctx.fillStyle = "#000";
+                ctx.beginPath()
+                ctx.arc(x, y, 3, 0, Math.PI*2);
+                ctx.fill()
+                ctx.fillStyle = fill;
             })
 
             canvas.addEventListener('mouseout', e => {

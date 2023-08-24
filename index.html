@@ -19,8 +19,19 @@
             const r = Math.floor(Math.random() * 256);
             const g = Math.floor(Math.random() * 256);
             const b = Math.floor(Math.random() * 256);
-            return `rgb(${r}, ${g}, ${b}, ${Math.random()})`;
+            return `rgb(${r}, ${g}, ${b})`;
         }
+
+        const keymap = {
+            68: [1, 0],
+            65: [-1, 0],
+            83: [0, 1],
+            87: [0, -1],
+        }
+
+        const size = 50;
+        const dim = [canvas.width, canvas.height];
+        let [x, y] = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size));
 
         window.addEventListener('load', () => {
             const canvas = document.getElementById('canvas');
@@ -38,15 +49,22 @@
                 ctx.fillStyle = randomRGB()
             })
 
-            document.addEventListener('keydown', e => {
-                const dim = [canvas.width, canvas.height]
-                const size = 50;
-                const [x, y] = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size));
+            const drawRect = () => {
                 ctx.fillStyle = randomRGB();
                 ctx.beginPath()
                 ctx.rect(x - 30, y - 30, size, size)
                 ctx.fill()
+            }
+
+            document.addEventListener('keydown', e => {
+                if(!keymap[e.keyCode]) return;
+                const [xAdd, yAdd] = keymap[e.keyCode];
+                x += xAdd * 10;
+                y += yAdd * 10;
+                drawRect();
             })
+                drawRect();
+            
 
 
         })

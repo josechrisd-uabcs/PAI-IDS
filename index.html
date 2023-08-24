@@ -38,34 +38,17 @@
                 ctx.fillStyle = randomRGB()
             })
 
-            canvas.addEventListener('mousemove', e => {
-                const {offsetX: x, offsetY: y} = e;
-                const fill = ctx.fillStyle;
-                ctx.fillStyle = "#000";
+            document.addEventListener('keydown', e => {
+                const dim = [canvas.width, canvas.height]
+                const size = 50;
+                const [x, y] = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size));
+                ctx.fillStyle = randomRGB();
                 ctx.beginPath()
-                ctx.arc(x, y, 3, 0, Math.PI*2);
+                ctx.rect(x - 30, y - 30, size, size)
                 ctx.fill()
-                ctx.fillStyle = fill;
-                if(is_pressed){
-                    ctx.beginPath()
-                    if(!cuadrado) ctx.arc(x, y, 30, 0, Math.PI*2);
-                    else ctx.rect(x - 30, y - 30, 60, 60)
-                    ctx.stroke()
-                    ctx.fill()
-                }
             })
 
-            canvas.addEventListener('mouseout', e => {
-                cuadrado = !cuadrado
-            })
 
-            document.addEventListener('mousedown', e => {
-                is_pressed = true;
-            })
-
-            document.addEventListener('mouseup', e => {
-                is_pressed = false;
-            })
         })
     </script>
 </body>

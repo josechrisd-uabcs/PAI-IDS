@@ -56,14 +56,20 @@
                 ctx.fill()
             }
 
+            const redraw = () => {
+                ctx.clearRect(0, 0, dim[0], dim[1]);
+                drawRect();
+            }
+
             document.addEventListener('keydown', e => {
                 if(!keymap[e.keyCode]) return;
                 const [xAdd, yAdd] = keymap[e.keyCode];
                 x += xAdd * 10;
                 y += yAdd * 10;
-                drawRect();
+                redraw();
             })
-                drawRect();
+
+            drawRect();
             
 
 

@@ -22,154 +22,57 @@
             return `rgb(${r}, ${g}, ${b})`;
         }
 
+        const keymap = {
+            68: [1, 0],
+            65: [-1, 0],
+            83: [0, 1],
+            87: [0, -1],
+        }
+
+        const size = 50;
         const dim = [canvas.width, canvas.height];
-
-        const fullElipse = (ctx, x, y, r, fill = null, strokeColor = null) => {
-            ctx.fillStyle = fill ?? ctx.fillStyle;
-            ctx.strokeStyle = strokeColor ?? ctx.strokeStyle;
-            ctx.beginPath();
-
-            if(Array.isArray(r)){
-                const [ rx, ry, rot ] = r;
-                ctx.ellipse(x, y, rx, ry ?? rx, rot ?? 0, 0, Math.PI * 2);
-            }else{
-                ctx.ellipse(x, y, r, r, 0, 0, Math.PI * 2);
-            }
-
-            fill && ctx.fill();
-            strokeColor && ctx.fill();
-        }
-
-        const clip = (ctx, clipping_f, drawing_f) => {
-            ctx.save();
-            ctx.beginPath();
-            clipping_f();
-            ctx.clip();
-            ctx.closePath();
-            drawing_f();
-            ctx.restore();
-        }
+        let [x, y] = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size));
 
         window.addEventListener('load', () => {
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
             if(!ctx) return;
-
-            const scale = 720 / 190.49999;
-        
-
-            clip(
-                ctx, 
-                () => fullElipse(ctx, 95.249992 * scale, 117.85976 * scale, [18.307961, 40.217957].map(e => e * scale)),
-                () => { 
-                    ctx.fillStyle = '#193f5c';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                    ctx.fillStyle = '#23282b';
-                    ctx.fillRect(60.402912 * scale, 46.103992 * scale, 66.149208 * scale, 75.904541 * scale);
-                    
-                    ctx.fillStyle = '#8e8b71';
-                    ctx.fillRect(95.249962 * scale, 102.05569 * scale, 27.646442 * scale, 2.1104133 * scale);
-
-                    ctx.fillStyle = '#cd454d';
-                    ctx.fillRect(67.603569 * scale, 102.05569 * scale, 27.646442 * scale, 2.1104133 * scale);
-                }
-            );
             
-            clip(
-                ctx, 
-                () => ctx.arc(95 * scale, 57 * scale, 24 * scale, 0, Math.PI * 2),
-                () => {
-                    ctx.fillStyle = '#f7ccac';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-                    fullElipse(ctx, 86.270195 * scale, 58.64299 * scale, [1.3134195, 3.5059454].map(e => e * scale), '#1b0d00');
-                    fullElipse(ctx, 104.2298 * scale, 58.64299 * scale, [1.3134195, 3.5059454].map(e => e * scale), '#1b0d00');
-        
-                    fullElipse(ctx, 73 * scale, 39 * scale, 22 * scale, '#3c2b1e');
-                    fullElipse(ctx, 115.99143 * scale, 31.419266 * scale, 25.938614 * scale, '#3c2b1e');
-        
-                    ctx.fillStyle = '#3c2b1e';
-                    ctx.fillRect(89.03598 * scale, 67.940178 * scale, 12.428032 * scale, 1.2027128 * scale);
-                }
-            );
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#aaaaff';
+            ctx.strokeStyle = '#000';
 
-              
-            ctx.beginPath()
-            let [cx, cy] = [71.761864 * scale + 5, 97.820641 * scale];
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(cx - Math.cosh(Math.PI * 30 *2/ 360) * 100, cy + Math.sinh(Math.PI * 30 *2/ 360) * 100);
-            ctx.lineWidth = 20;
-            ctx.strokeStyle = '#f7ccac';
-            ctx.stroke();
-            fullElipse(ctx, cx - Math.cosh(Math.PI * 30 *2/ 360) * 100, cy + Math.sinh(Math.PI * 30 *2/ 360) * 100, 20, "#f7ccac")
+            let cuadrado = false;
+            let is_pressed = false;
 
-            let last = [5, 0]
-            clip(
-                ctx, 
-                () => fullElipse(ctx, 71.761864 * scale + last[0], 97.820641 * scale + last[0], [12.428032 * scale, 5.4790254 * scale, Math.PI * 2 * -25 / 360]),
-                () => {
-                    ctx.fillStyle = '#23282b';
-                    ctx.beginPath();
-                    '66.048979,90.570958 7.784224,16.737752 17.60638,-8.385581 -7.617182,-12.394623'
-                    .split(' ').forEach((e, i, arr) => {
-                        const [x, y] = e.split(',').map((e, i) => parseFloat(e) * scale + last[i]);
-                        last = [x, y];
-                        if(i == 0){
-                            ctx.moveTo(x, y);
-                            return;
-                        }
-                        ctx.lineTo(x, y);
-                    })
-                    ctx.fill();
-                }
-            );
+            canvas.addEventListener('mouseenter', e => {
+                ctx.fillStyle = randomRGB()
+            })
 
-            ctx.scale(-1, 1);
-            ctx.beginPath();
-            [cx, cy] = [71.761864 * scale - 700, 97.820641 * scale];
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(cx - Math.cosh(Math.PI * 30 *2/ 360) * 100, cy + Math.sinh(Math.PI * 30 *2/ 360) * 100);
-            ctx.lineWidth = 20;
-            ctx.strokeStyle = '#f7ccac';
-            ctx.stroke();
-            fullElipse(ctx, cx - Math.cosh(Math.PI * 30 *2/ 360) * 100, cy + Math.sinh(Math.PI * 30 *2/ 360) * 100, 20, "#f7ccac")
+            const drawRect = () => {
+                ctx.fillStyle = randomRGB();
+                ctx.beginPath()
+                ctx.rect(x - 30, y - 30, size, size)
+                ctx.fill()
+            }
 
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            const redraw = () => {
+                ctx.clearRect(0, 0, dim[0], dim[1]);
+                drawRect();
+            }
 
-            last = [0, 0]
-            clip(
-                ctx, 
-                () => fullElipse(ctx, 71.761864 * scale + 160, 97.820641 * scale, [12.428032 * scale, 5.4790254 * scale, Math.PI * 2 * 25 / 360]),
-                () => {
-                    last = [-820, 14]
-                    ctx.fillStyle = '#23282b';
-                    ctx.beginPath();
-                    ctx.scale(-1, 1);
-                    '97.002487,85.967913 7.784233,16.737757 17.60637,-8.385586 -7.61717,-12.394623'
-                    .split(' ').forEach((e, i, arr) => {
-                        const [x, y] = e.split(',').map((e, i) => parseFloat(e) * scale + last[i]);
-                        last = [x, y];
-                        if(i == 0){
-                            ctx.moveTo(x, y);
-                            return;
-                        }
-                        ctx.lineTo(x, y);
-                    })
-                    ctx.fill();
-                    ctx.setTransform(1, 0, 0, 1, 0, 0);
-                }
-            );
+            document.addEventListener('keydown', e => {
+                if(!keymap[e.keyCode]) return;
+                const [xAdd, yAdd] = keymap[e.keyCode];
+                x += xAdd * 10;
+                y += yAdd * 10;
+                redraw();
+            })
 
-            fullElipse(ctx, 108.61594 * scale, 154.76366 * scale, [ 12.521786 * scale, 6.0171776 * scale ], "#020218ff")
-            ctx.fillStyle = '#020218ff';
-            ctx.fillRect(96.10334 * scale, 148.75217 * scale, 12.034307 * scale, 12.034307 * scale);
-
-            ctx.scale(-1, 1);
-            fullElipse(ctx, -81.884041 * scale, 154.62013 * scale, [ 12.521787 * scale, 6.0171776 * scale ], "#020218ff")
-            ctx.fillStyle = '#020218ff';
-            ctx.fillRect(-94.396629 * scale, 148.60864 * scale, 12.034307 * scale, 12.034307 * scale);
+            drawRect();
             
+
+
         })
     </script>
 </body>

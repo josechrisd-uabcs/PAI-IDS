@@ -15,6 +15,21 @@
     <canvas width="720" height="700" id="canvas"></canvas>
     <script>
 
+        class Clock {
+            lastTime = 0;
+            deltaTime = 0;
+
+            constructor(lastTime) {
+                this.lastTime = lastTime;
+            }
+
+            tick(time){
+                if (time < this.lastTime) return;
+                this.deltaTime = (time - this.lastTime) / 1000;
+                this.lastTime = time;
+            }
+        }
+
         const randomRGB = () => {
             const r = Math.floor(Math.random() * 256);
             const g = Math.floor(Math.random() * 256);
@@ -31,7 +46,9 @@
 
         const size = 50;
         const dim = [canvas.width, canvas.height];
-        let [x, y] = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size));
+        let pos = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size));
+        let dir = [0, 0];
+        let clock = new Clock(performance.now())
 
         window.addEventListener('load', () => {
             const canvas = document.getElementById('canvas');
@@ -51,28 +68,48 @@
 
             const drawRect = () => {
                 ctx.fillStyle = randomRGB();
-                ctx.beginPath()
-                ctx.rect(x - 30, y - 30, size, size)
-                ctx.fill()
+                ctx.beginPath();
+                ctx.rect(pos[0] - size, pos[1] - size, size, size);
+                ctx.fill();
+            }
+
+            rotationalClamp = (val, max) => {
+                while(val < 0) val += max;
+                return val % max;
             }
 
             const redraw = () => {
                 ctx.clearRect(0, 0, dim[0], dim[1]);
+                pos = pos.map((e, i) => rotationalClamp(e + dir[i] * 400 * clock.deltaTime, dim[i] + size));
                 drawRect();
             }
 
             document.addEventListener('keydown', e => {
                 if(!keymap[e.keyCode]) return;
-                const [xAdd, yAdd] = keymap[e.keyCode];
-                x += xAdd * 10;
-                y += yAdd * 10;
-                redraw();
+                dir = keymap[e.keyCode];
             })
 
-            drawRect();
-            
+            let loop;
+            loop = (time = 0) => {
+                clock.tick(time);
+                redraw();
+                requestAnimationFrame(loop);
+            }
+            loop();
 
-
+            requestAnimationFrame = (callback) => {
+                if(
+                    window.webkitRequestAnimationFrame ||
+                    window.mozRequestAnimationFrame ||
+                    msRequestAnimationFrame ||
+                    oRequestAnimationFrame
+                )
+                    return (window.webkitRequestAnimationFrame ||
+                    window.mozRequestAnimationFrame ||
+                    msRequestAnimationFrame ||
+                    oRequestAnimationFrame)(callback);
+                return setTimeout(callback, 17, 17);
+            }
         })
     </script>
 </body>

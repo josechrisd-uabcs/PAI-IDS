@@ -37,6 +37,16 @@
             return `rgb(${r}, ${g}, ${b})`;
         }
 
+        const rectToRectCollision = (l1, s1, l2, s2) => {
+            const [ min_x, min_y ] = l1;
+            const [ max_x, max_y ] = l1.map((e, i) => e + s1[i]);
+            
+            const [ min_x2, min_y2 ] = l2;
+            const [ max_x2, max_y2 ] = l2.map((e, i) => e + s1[i]);
+            
+            return max_x >= min_x2 && min_x <= max_x2 && max_y >= min_y2 && min_y <= max_y2;
+        }
+
         const keymap = {
             68: [1, 0],
             65: [-1, 0],
@@ -44,9 +54,10 @@
             87: [0, -1],
         }
 
-        const size = 50;
+        const size = Array(2).fill(50);
         const dim = [canvas.width, canvas.height];
-        let pos = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size));
+        let pos = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size[i]));
+        let pos_food = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size[i]));
         let dir = [0, 0];
         let clock = new Clock(performance.now())
 
@@ -69,7 +80,11 @@
             const drawRect = () => {
                 ctx.fillStyle = randomRGB();
                 ctx.beginPath();
-                ctx.rect(pos[0] - size, pos[1] - size, size, size);
+                ctx.rect(pos[0] - size[0], pos[1] - size[1], size[0], size[1]);
+                ctx.fill();
+                ctx.fillStyle = "#000";
+                ctx.beginPath();
+                ctx.rect(pos_food[0], pos_food[1], size[0], size[1]);
                 ctx.fill();
             }
 
@@ -80,7 +95,10 @@
 
             const redraw = () => {
                 ctx.clearRect(0, 0, dim[0], dim[1]);
-                pos = pos.map((e, i) => rotationalClamp(e + dir[i] * 400 * clock.deltaTime, dim[i] + size));
+                pos = pos.map((e, i) => rotationalClamp(e + dir[i] * 400 * clock.deltaTime, dim[i] + size[i]));
+                if(rectToRectCollision(pos.map((e,i) => e - size[i]), size, pos_food, size)){
+                    pos_food = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size[i]));
+                }
                 drawRect();
             }
 

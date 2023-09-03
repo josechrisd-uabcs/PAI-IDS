@@ -42,7 +42,7 @@
             const [ max_x, max_y ] = l1.map((e, i) => e + s1[i]);
             
             const [ min_x2, min_y2 ] = l2;
-            const [ max_x2, max_y2 ] = l2.map((e, i) => e + s1[i]);
+            const [ max_x2, max_y2 ] = l2.map((e, i) => e + s2[i]);
             
             return max_x >= min_x2 && min_x <= max_x2 && max_y >= min_y2 && min_y <= max_y2;
         }
@@ -56,6 +56,12 @@
 
         const size = Array(2).fill(50);
         const dim = [canvas.width, canvas.height];
+        const obstacles = [
+            {
+                loc: [80, 80],
+                size: [500,40]
+            }
+        ]
         let pos = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size[i]));
         let pos_food = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size[i]));
         let dir = [0, 0];
@@ -86,6 +92,12 @@
                 ctx.beginPath();
                 ctx.rect(pos_food[0], pos_food[1], size[0], size[1]);
                 ctx.fill();
+                ctx.fillStyle = "#ddd";
+                obstacles.forEach(obstacle => {
+                    ctx.beginPath();
+                    ctx.rect(obstacle.loc[0], obstacle.loc[1], obstacle.size[0], obstacle.size[1]);
+                    ctx.fill();
+                })
             }
 
             rotationalClamp = (val, max) => {
@@ -95,7 +107,18 @@
 
             const redraw = () => {
                 ctx.clearRect(0, 0, dim[0], dim[1]);
-                pos = pos.map((e, i) => rotationalClamp(e + dir[i] * 400 * clock.deltaTime, dim[i] + size[i]));
+                const next_pos = pos.map((e, i) => rotationalClamp(e + dir[i] * 400 * clock.deltaTime, dim[i] + size[i]));
+                let has_collided = false;
+                for(let i = 0; i < obstacles.length; i++){
+                    const obstacle = obstacles[i];
+                    if(rectToRectCollision(next_pos.map((e,i) => e - size[i]), size, obstacle.loc, obstacle.size)){
+                        has_collided = true;
+                        dir = Array(2).fill(0);
+                        break;
+                    }
+                }
+                if(!has_collided) pos = next_pos;
+
                 if(rectToRectCollision(pos.map((e,i) => e - size[i]), size, pos_food, size)){
                     pos_food = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size[i]));
                 }

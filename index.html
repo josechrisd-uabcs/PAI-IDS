@@ -44,7 +44,7 @@
             const [ min_x2, min_y2 ] = l2;
             const [ max_x2, max_y2 ] = l2.map((e, i) => e + s2[i]);
             
-            return max_x >= min_x2 && min_x <= max_x2 && max_y >= min_y2 && min_y <= max_y2;
+            return max_x > min_x2 && min_x < max_x2 && max_y > min_y2 && min_y < max_y2;
         }
 
         const keymap = {
@@ -54,104 +54,251 @@
             87: [0, -1],
         }
 
-        const size = Array(2).fill(50);
-        const dim = [canvas.width, canvas.height];
-        const obstacles = [
-            {
-                loc: [80, 80],
-                size: [500,40]
+        requestAnimationFrame = (callback) => {
+            if(
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                msRequestAnimationFrame ||
+                oRequestAnimationFrame
+            )
+                return (window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                msRequestAnimationFrame ||
+                oRequestAnimationFrame)(callback);
+            return setTimeout(callback, 17, 17);
+        }
+        
+        rotationalClamp = (val, min, max) => {
+            val -= min
+            const diff = max - min;
+            while(val < min) val += diff;
+            return (val % diff) + min;
+        }
+
+        class Game {
+            constructor(canvas, context){
+                this.entities = [];
+                this._entities_map = new Map();
+                this.clock = new Clock(performance.now());
+                this.canvas = canvas;
+                this.canvas_ctx = canvas.getContext('2d');
+                this.canvas_size = [ this.canvas.width, this.canvas.height ];
+                this.context = Object.freeze({});
+                document.addEventListener('keydown', this.keydown.bind(this));
+                this.addEntity(new GameController());
+                this.addEntity(new Player(
+                    [400, 400],
+                    [50, 50]
+                ));
+                this.addEntity(new Food())
+                this.addEntity(new Obstacle())
+                this.addEntity(new Obstacle([
+                    100,
+                    600
+                ]))
             }
-        ]
-        let pos = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size[i]));
-        let pos_food = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size[i]));
-        let dir = [0, 0];
-        let clock = new Clock(performance.now())
 
-        window.addEventListener('load', () => {
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            if(!ctx) return;
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#aaaaff';
-            ctx.strokeStyle = '#000';
+            addEntity(entity){
+                if(!(entity instanceof Entity)) {
+                    throw Error('That element is not an Entity');
+                }
+                this.entities.push(entity);
+                !this._entities_map.has(entity.constructor.name) && this._entities_map.set(entity.constructor.name, []);
+                this._entities_map.get(entity.constructor.name).push(entity);
+                console.log(this._entities_map.get(entity.constructor.name))
+                entity.init(this);
+            }
 
-            let cuadrado = false;
-            let is_pressed = false;
+            getEntitiesOfType(class_name){
+                return this._entities_map.get(class_name);
+            }
 
-            canvas.addEventListener('mouseenter', e => {
-                ctx.fillStyle = randomRGB()
-            })
+            getEntityOfType(class_name){
+                return this._entities_map.get(class_name)[0];
+            }
 
-            const drawRect = () => {
-                ctx.fillStyle = randomRGB();
-                ctx.beginPath();
-                ctx.rect(pos[0] - size[0], pos[1] - size[1], size[0], size[1]);
-                ctx.fill();
-                ctx.fillStyle = "#000";
-                ctx.beginPath();
-                ctx.rect(pos_food[0], pos_food[1], size[0], size[1]);
-                ctx.fill();
-                ctx.fillStyle = "#ddd";
-                obstacles.forEach(obstacle => {
-                    ctx.beginPath();
-                    ctx.rect(obstacle.loc[0], obstacle.loc[1], obstacle.size[0], obstacle.size[1]);
-                    ctx.fill();
+            doLoop(time){
+                time && this.clock.tick(time);
+                this.update();
+                this.draw(this.canvas_ctx, this.canvas_size, this);
+                requestAnimationFrame(this.doLoop.bind(this));
+            }
+
+            update(){
+                this.entities.forEach(e => e.update(this));
+                this.entities.forEach(e => e.lateUpdate(this));
+            }
+
+            draw(ctx, size, game) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#aaaaff';
+                ctx.strokeStyle = '#000';
+                this.entities.forEach(e => e.draw(ctx, this.canvas_size, this));
+            }
+
+            keydown(event) {
+                this.entities.forEach(e => e.keydown(event.keyCode, event.key, event, this))
+            }
+
+            get deltaTime() {
+                return this.clock.deltaTime;
+            }
+
+            setContext (v) {
+                this.context = { ...this.context, ...v};
+            }
+        }
+
+        class Entity {
+            init(game) { }
+            update(game) { }
+            lateUpdate(game) { }
+            draw(ctx, size, game) { }
+            keydown(keycode, key) { }
+        }
+
+        class GameController extends Entity {
+            constructor() {
+                super();
+            }
+
+            keydown(keycode, key, event, game) {
+                if(key == 'Escape'){
+                    game.setContext({
+                        paused: !game.context.paused
+                    });
+                }
+            }
+        }
+
+        class Player extends Entity {
+            constructor(pos, size, dir = [0, 0]) {
+                super();
+                this.pos = pos;
+                this.dir = dir;
+                this.size = size;
+            }
+
+            init(game){
+                game.setContext({
+                    speed: 400
                 })
             }
 
-            rotationalClamp = (val, max) => {
-                while(val < 0) val += max;
-                return val % max;
-            }
-
-            const redraw = () => {
-                ctx.clearRect(0, 0, dim[0], dim[1]);
-                const next_pos = pos.map((e, i) => rotationalClamp(e + dir[i] * 400 * clock.deltaTime, dim[i] + size[i]));
-                let has_collided = false;
-                for(let i = 0; i < obstacles.length; i++){
-                    const obstacle = obstacles[i];
-                    if(rectToRectCollision(next_pos.map((e,i) => e - size[i]), size, obstacle.loc, obstacle.size)){
-                        has_collided = true;
-                        dir = Array(2).fill(0);
-                        break;
+            update(game) {
+                if(game.context.paused) return;
+                const nextPos = this.pos.map((e, i) => rotationalClamp(e + this.dir[i] * game.context.speed * game.deltaTime, -this.size[i] / 2, game.canvas_size[i] + this.size[i] / 2));
+                let hit_obstacles = [];
+                game.getEntitiesOfType(Obstacle.name)?.forEach(e => {
+                    if(rectToRectCollision(e.pos, e.size, nextPos.map((e,i) => e - this.size[i] / 2), this.size)){
+                        hit_obstacles.push(e);
                     }
+                })
+                if(hit_obstacles.length == 0){
+                    this.pos = nextPos;
+                }else{
+                    hit_obstacles.forEach(element => {
+                        if(!rectToRectCollision(element.pos, element.size, nextPos.map((e,i) => e - this.size[i] / 2), this.size)){
+                            return;
+                        }
+                        if(this.dir[0] > 0){
+                            this.pos[0] = element.pos[0] - this.size[0] / 2;
+                        }
+                        if(this.dir[0] < 0){
+                            this.pos[0] = element.pos[0] + element.size[0] + this.size[0] / 2;
+                        }
+        
+                        if(this.dir[1] > 0){
+                            this.pos[1] = element.pos[1] - this.size[1] / 2;
+                        }
+                        
+                        if(this.dir[1] < 0){
+                            this.pos[1] = element.pos[1] + element.size[1] + this.size[1] / 2;
+                        }
+                    })
+                    this.dir = [0, 0];
                 }
-                if(!has_collided) pos = next_pos;
+            }
 
-                if(rectToRectCollision(pos.map((e,i) => e - size[i]), size, pos_food, size)){
-                    pos_food = Array(2).fill(0).map((e, i) => Math.random() * (dim[i] - size[i]));
+            draw(ctx) {
+                ctx.fillStyle = randomRGB();
+                ctx.beginPath();
+                ctx.rect(this.pos[0] - this.size[0] / 2, this.pos[1] - this.size[1] / 2, this.size[0], this.size[1]);
+                ctx.fill();
+            }
+
+            keydown(keyCode){
+                if(!keymap[keyCode]) return;
+                this.dir = keymap[keyCode];
+            }
+
+            get minPos () {
+                return [this.pos[0] - this.size[0] / 2, this.pos[1] - this.size[1] / 2]
+            }
+
+            get maxPos () {
+                return [this.pos[0] + this.size[0] / 2, this.pos[1] + this.size[1] / 2]
+            }
+        }
+
+        class Food extends Entity {
+            constructor(size = [50, 50]) {
+                super();
+                this.pos = [0, 0];
+                this.size = [50, 50];
+            }
+
+            init(game){
+                this.randomize(game);
+            }
+
+            draw(ctx) {
+                ctx.fillStyle = "#000";
+                ctx.beginPath();
+                ctx.rect(this.pos[0], this.pos[1], this.size[0], this.size[1]);
+                ctx.fill();
+            }
+
+            lateUpdate(game){
+                const player = game.getEntityOfType(Player.name);
+                if(rectToRectCollision(player.minPos, player.size, this.pos, this.size)){
+                    this.randomize(game);
+                    game.setContext({
+                        speed: game.context.speed + 50
+                    })
                 }
-                drawRect();
             }
 
-            document.addEventListener('keydown', e => {
-                if(!keymap[e.keyCode]) return;
-                dir = keymap[e.keyCode];
-            })
-
-            let loop;
-            loop = (time = 0) => {
-                clock.tick(time);
-                redraw();
-                requestAnimationFrame(loop);
+            randomize(game){
+                this.pos = Array(2).fill(0).map((_, i) => Math.random() * (game.canvas_size[i] - this.size[i]));
             }
-            loop();
+        }
 
-            requestAnimationFrame = (callback) => {
-                if(
-                    window.webkitRequestAnimationFrame ||
-                    window.mozRequestAnimationFrame ||
-                    msRequestAnimationFrame ||
-                    oRequestAnimationFrame
-                )
-                    return (window.webkitRequestAnimationFrame ||
-                    window.mozRequestAnimationFrame ||
-                    msRequestAnimationFrame ||
-                    oRequestAnimationFrame)(callback);
-                return setTimeout(callback, 17, 17);
+        class Obstacle extends Entity {
+            constructor(pos = [100, 100], size = [400, 50]) {
+                super();
+                this.pos = pos;
+                this.size = size;
             }
+
+            draw(ctx) {
+                ctx.fillStyle = "#ddd";
+                ctx.beginPath();
+                ctx.rect(this.pos[0], this.pos[1], this.size[0], this.size[1]);
+                ctx.fill();
+            }
+
+            get center() {
+                return this.pos.map((e, i) => e + this.size[i] / 2);
+            }
+        }
+
+
+        window.addEventListener('load', () => {
+            const game = new Game(document.getElementById('canvas'))
+            game.doLoop();
         })
+        
     </script>
 </body>
 </html>
